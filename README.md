@@ -1,6 +1,6 @@
 # Keyword Bingo
 
-Generate a keyword bingo card. Bingo card is generated from input keyword and is randomized on each generation.
+Generate a keyword bingo card to play with your friends. Bingo card is generated from provided input file with keywords (one per line) and is randomized on each generation. 
 
 <img src="docs/image.png" alt="bingo" width="300"/>
 
