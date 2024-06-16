@@ -15,13 +15,13 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-from setuptools import setup
+from setuptools import setup, find_packages
 
 try:
     from bingo.bingo import __version__
 except:
     print("Could not import package version")
-    __version__ = "0.0.0"
+    __version__ = None
 
 setup(
     name="keyword-bingo",
@@ -30,6 +30,7 @@ setup(
     author="Jure Cerar",
     url="https://github.com/JureCerar/keyword-bingo",
     install_requires=["pillow", "numpy"],
+    packages=find_packages(),
     include_package_data=True,
     entry_points={
         "console_scripts": [

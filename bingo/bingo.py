@@ -28,8 +28,8 @@ from PIL import Image, ImageDraw, ImageFont
 
 
 __author__ = "Jure Cerar"
-__date__ = "11 Jun 2024"
-__version__ = "0.1.0"
+__date__ = "15 Jun 2024"
+__version__ = "0.1.1"
 
 
 # Global settings
@@ -55,6 +55,7 @@ def text_box(size, padding, text, font_size, font_path):
         size = int: Size of canvas in pixels.
         padding = int: Number of pixels between content and border.
         text = str: Text do display. Will be split and resized to fit canvas.
+        font_size = int: Sie of the font used.
         font_path = str: Font to use for drawing.
     """
     # Create a blank image with white background
@@ -264,7 +265,7 @@ def main():
         help="size of the bingo card"
     )
     parser.add_argument(
-        "-s", "--seed", dest="seed", default=None,
+        "-s", "--seed", dest="seed", type=int, default=None,
         help="random number generator seed"
     )
     args = parser.parse_args()

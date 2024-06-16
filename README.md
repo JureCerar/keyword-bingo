@@ -2,7 +2,7 @@
 
 Generate a keyword bingo card to play with your friends. Bingo card is generated from provided input file with keywords (one per line) and is randomized on each generation. 
 
-<img src="docs/image.png" alt="bingo" width="300"/>
+<img src="docs/image.png" alt="bingo" width="400"/>
 
 ## Installation
 
@@ -15,6 +15,15 @@ pip install .
 ```
 
 __NOTE:__ Before installation you can edit default bingo keywords by editing `bingo/bingo.dat`.
+
+## Building
+
+To build the package type the following in command line:
+
+```bash
+pip install build
+python -m build
+```
 
 ## Usage
 
