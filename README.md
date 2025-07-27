@@ -1,8 +1,16 @@
 # Keyword Bingo
 
-Generate a keyword bingo card to play with your friends. Bingo card is generated from provided input file with keywords (one per line) and is randomized on each generation. 
+Tired of the same buzzwords and jargon? Turn those dull meetings into a game with Keyword Bingo!
+
+Bingo card is generated from provided input file with keywords (one per line) and is randomized on each generation. Play solo or compete with coworkers. It's way more fun than pretending to take notes. 
 
 <img src="docs/image.png" alt="bingo" width="400"/>
+
+## How to play?
+
+Mark off keywords on your bingo card as you hear them mentioned. The first person to complete a row (horizontal, vertical, or diagonal) shouts __"Bingo!"__ and wins.
+
+The center space (star) is a _free space_ and counts towards a bingo.
 
 ## Installation
 
@@ -14,7 +22,8 @@ cd ./keyword-bingo
 pip install .
 ```
 
-__NOTE:__ Before installation you can edit default bingo keywords by editing `bingo/bingo.dat`.
+> [!NOTE]
+> Before installation you can edit default bingo keywords by editing `bingo/bingo.dat`.
 
 ## Building
 
@@ -45,7 +54,7 @@ options:
 
 This program is licensed under the __GNU General Public License v3.0__
 
-Copyright (C) 2024 [Jure Cerar](https://github.com/JureCerar)
+Copyright (C) 2024-2025 [Jure Cerar](https://github.com/JureCerar)
 
 This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.
 

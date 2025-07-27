@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 #
-# Copyright (C) 2024 Jure Cerar
+# Copyright (C) 2024-2025 Jure Cerar
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,27 +17,34 @@
 
 import random
 import time
-import hashlib
 import argparse
 import pathlib
 from typing import Tuple
 
 import numpy as np
-
 from PIL import Image, ImageDraw, ImageFont
 
 
 __author__ = "Jure Cerar"
+__contact__ = "name.surname@gmail.com"
+__url__ = "https://github.com/JureCerar/keyword-bingo"
 __date__ = "15 Jun 2024"
-__version__ = "0.1.1"
+__version__ = "0.2.0"
 
 
 # Global settings
-SIZE = 200  # Size of each field
-PADDING = 5  # Padding on each side
-FONT_SIZE = 25 # Default font size
+SIZE = 200  # [px] Size of each field
+PADDING = 5  # [px] Padding on each side
+FONT_SIZE = 25  # [px] Default font size
 FONT_PATH = "arial.ttf"  # Path to font file
 INPUT = "bingo.dat" # Default words input file
+COLORS = {
+    "background": "white",
+    "text": "black",
+    "star": "gold",
+    "border": "gray",
+    "footer": "gray",
+}
 
 
 def text_size(draw: ImageDraw, text: str, font: str) -> Tuple[float, float]:
@@ -46,41 +53,40 @@ def text_size(draw: ImageDraw, text: str, font: str) -> Tuple[float, float]:
     return (bbox[2] - bbox[0], bbox[3] - bbox[1])
 
 
-def text_box(size, padding, text, font_size, font_path):
+def text_box(size: int, padding: int, text: str) -> Image:
     """
-    DESCRIPTION
-        Generate a text box using Pillow. Text is split and resized to fit
-        the canvas.
-    ARGUMENTS
-        size = int: Size of canvas in pixels.
-        padding = int: Number of pixels between content and border.
-        text = str: Text do display. Will be split and resized to fit canvas.
-        font_size = int: Sie of the font used.
-        font_path = str: Font to use for drawing.
+    Generate a text box using Pillow. Text is split and resized to fit
+    the canvas.
+    Args:
+        size (int): Size of canvas in pixels.
+        padding (int): Number of pixels between content and border.
+        text (str): Text do display. Will be split and resized to fit canvas.
+        font_size (int): Sie of the font used.
+        font_path (str): Font to use for drawing.
     """
     # Create a blank image with white background
-    image = Image.new('RGB', (size, size), color='white')
+    image = Image.new("RGB", (size, size), color=COLORS["background"])
     draw = ImageDraw.Draw(image)
 
-    # Load a font
-    current_font_size = font_size  # Starting font size
-    font = ImageFont.truetype(font_path, current_font_size)
+    # Load a font at current size, we will shrink it as needed to fit in a tile
+    current_font_size = FONT_SIZE  # Starting font size
+    font = ImageFont.truetype(FONT_PATH, current_font_size)
 
     # Function to wrap text
     def wrap_text(text, font, max_width):
         lines = []
-        for line in text.split('\n'):
+        for line in text.split("\n"):
             # Textwrap calculates line width in characters, but we need it in pixels
             words = line.split()
             current_line = []
             for word in words:
-                test_line = ' '.join(current_line + [word])
+                test_line = " ".join(current_line + [word])
                 if text_size(draw, test_line, font)[0] <= max_width:
                     current_line.append(word)
                 else:
-                    lines.append(' '.join(current_line))
+                    lines.append(" ".join(current_line))
                     current_line = [word]
-            lines.append(' '.join(current_line))
+            lines.append(" ".join(current_line))
         return lines
 
     # Adjust font size to fit text within the square with padding
@@ -92,7 +98,7 @@ def text_box(size, padding, text, font_size, font_path):
         if text_height <= (size - 2 * padding):
             break
         current_font_size -= 1
-        font = ImageFont.truetype(font_path, current_font_size)
+        font = ImageFont.truetype(FONT_PATH, current_font_size)
 
     # Calculate position to center the text
     total_text_height = sum([text_size(draw, line, font)[1]
@@ -107,133 +113,98 @@ def text_box(size, padding, text, font_size, font_path):
         draw.text((x, y), line, fill="black", font=font)
         y += text_height
 
-    # Optional: Draw the border of the square
-    draw.rectangle([0, 0, size-1, size-1], outline="black")
+    # Draw the border of the square
+    draw.rectangle([0, 0, size-1, size-1], outline=COLORS["border"], width=1)
 
     return image
 
 
-def draw_star(size, points, outer_radius, inner_radius, color):
-    """
-    DESCRIPTION
-        Draw a star using Pillow
-    ARGUMENTS
-        size = int: Size of canvas in pixels.
-        points = int: Number of points on a star.
-        outer_radius = int: Outer radius of star.
-        inner_radius = int: Inner radius of star.
-        color = any: Star fill color.
+def draw_star(size: int, points: int, outer_radius: int, inner_radius: int) -> Image:
+    """Draw a star using Pillow
+    Args:
+        size (int): Size of canvas in pixels.
+        points (int): Number of points on a star.
+        outer_radius (int): Outer radius of star.
+        inner_radius (int): Inner radius of star.
     """
     # Create a blank image with white background
-    image = Image.new('RGB', (size, size), 'white')
+    image = Image.new("RGB", (size, size), COLORS["background"])
     draw = ImageDraw.Draw(image)
-
     # Center of canvas
     center = size // 2
 
     # Calculate the coordinates of the star points
     angle = 360 / (points * 2)
     coordinates = []
-
     for i in range(points * 2):
         radius = outer_radius if i % 2 == 0 else inner_radius
         x = center + radius * np.cos(np.radians(angle * i))
         y = center - radius * np.sin(np.radians(angle * i))
         coordinates.append((x, y))
 
-    # Draw the star
-    draw.polygon(coordinates, fill=color)
-
-    # Draw the border of the square
-    draw.rectangle([0, 0, size-1, size-1], outline="black")
+    # Draw the star tile
+    draw.polygon(coordinates, fill=COLORS["star"])
+    draw.rectangle([0, 0, size-1, size-1], outline=COLORS["border"])
 
     return image
 
 
-def read_words(filename: str) -> Tuple[list, str]:
-    """Read words from file and calculate md5 sum of file"""
-    hash = hashlib.md5(open(filename, 'rb').read()).hexdigest()
-    with open(filename) as handle:
-        words = handle.read().splitlines()
-    return words, hash
-
-
-def _bingo(rows, cols, grid, seed, hash, *, size=SIZE, padding=PADDING, font_size=FONT_SIZE, font_path=FONT_PATH):
+def _bingo(rows: int, cols: int, grid: np.ndarray, footer: str) -> Image:
     """Generate cols x row sized bingo card"""
 
     # Create a blank image with white background
-    image = Image.new('RGB', (cols*size, rows*size), (255, 255, 255))
+    image = Image.new("RGB", (cols * SIZE, rows * SIZE), COLORS["background"])
     draw = ImageDraw.Draw(image)
 
-    # Add each bingo tile individually
+    # Add tiles to bingo card 
     for i in range(cols):
         for j in range(rows):
+            # Middle tile is bingo tile
             if (i, j) == (cols // 2, rows // 2):
-                # Bingo tile
-                radius = size // 2 - padding
-                box = draw_star(size, 5, radius, 0.5 * radius, "gold")
+                radius = SIZE // 2 - PADDING
+                box = draw_star(SIZE, 5, radius, 0.5 * radius)
             else:
-                # Normal tile
-                box = text_box(size, padding, grid[i, j], font_size, font_path)
+                box = text_box(SIZE, PADDING, grid[i, j])
+            image.paste(box, (i * SIZE, j * SIZE))
 
-            # Add tile to image
-            image.paste(box, (i * size, j * size))
-
-    # Add random seed and hash in bottom left corner
-    line = f"seed: {seed} md5: {hash}"
-    font = ImageFont.truetype(font_path, 12)
-    height = text_size(draw, line, font=font)[1]
-    xy = (padding, rows * size - padding - int(height * 1.5))
-    draw.text(xy, line, fill="gray", font=font)
+    # Add footer in the bottom left corner
+    if footer:
+        font = ImageFont.truetype(FONT_PATH, 12)
+        height = text_size(draw, str(footer), font=font)[1]
+        xy = (PADDING, rows * SIZE - PADDING - int(height * 1.5))
+        draw.text(xy, str(footer), fill=COLORS["footer"], font=font)
 
     return image
 
 
-def bingo(input, output=None, rows=5, cols=5, seed=None):
-    """
-    DESCRIPTION
-        Generate keyword bing card
-    USAGE
-        bingo input [, output [, rows [, cols [, seed ]]]]
-    ARGUMENTS
-        input = str: Input file with bingo words (one per line).
-        output = str: Output image name. {default: None}
-        rows = int: Number of rows. {default: 5}
-        cols = int: Number of columns. {default: 5}
-        seed = any: Random number generator seed. {default: None}
+def bingo(words: list[str], rows: int = 5, cols: int = 5, seed: int|float|str = None) -> Image:
+    """Generate keyword bing card
+    Args:
+        input (list): Input file with bingo words (one per line).
+        rows (int): Number of rows. {default: 5}
+        cols (int): Number of columns. {default: 5}
+        seed (int, float, str): Random number generator seed. {default: None}
+    Returns:
+        result (PIL.Image): Pillow Image object with bing card
     """
     if rows < 1 or cols < 1:
         raise Exception(f"Invalid size: {rows} x {cols}")
-
-    # Initialize random
+    if len(words) < cols * rows:
+        raise Exception(f"Not enough words in list: <{cols * rows}")
+    
     if not seed:
         seed = int(time.time())
     random.seed(seed)
+    footer = f"Seed: {seed}"
 
-    # Read and shuffle dictionary
-    words, hash = read_words(input)
-    words = sorted(words, key=lambda x: random.random())
+    # Shuffle words and put them onto a grid
+    shuffled = sorted(words, key=lambda x: random.random())
+    grid = np.array(shuffled[:cols*rows]).reshape((cols, rows))
 
-    # Check if there is enough words
-    if len(words) < cols * rows:
-        raise Exception(f"Not enough words in list: <{cols * rows}")
-
-    # Arrange words in a grid
-    grid = np.array(words[:cols*rows]).reshape((cols, rows))
-
-    # Generate bingo card
-    image = _bingo(rows, cols, grid, seed, hash)
-
-    # Save to file
-    if output:
-        image.save(output)
-
-    # Display to screen
-    image.show()
+    return _bingo(rows, cols, grid, footer)
 
 
 def main():
-
     # Default input file
     path = pathlib.Path(__file__).resolve().parent
     input_file = pathlib.Path.joinpath(path, INPUT)
@@ -270,8 +241,17 @@ def main():
     )
     args = parser.parse_args()
 
+    # Read input file
+    with open(args.input, "r") as f:
+        words = f.read().splitlines() 
+
     # Let's do this 
-    bingo(args.input, args.output, args.size, args.size, args.seed)
+    img = bingo(words, args.size, args.size, args.seed)
+
+    # Display and save image
+    if args.output:
+        img.save(args.output)
+    img.show()
 
 
 if __name__ == "__main__":
